@@ -1,0 +1,12 @@
+.git
+.snakemake
+0.original
+0.ref
+1.out_raw
+2.analysis
+log
+out_raw
+dag.pdf
+sbatch_.sh
+README.Rmd
+
