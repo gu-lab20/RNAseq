@@ -1,52 +1,3 @@
-import pandas as pd
-dir_project = "/home/zgu_labs/pipeline_online/rnaseq/"
-
-ref_fa=dir_project+"0.ref/genome/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna"
-gtf="0.ref/genome_anno/Homo_sapiens.GRCh38.V102.withChr.gtf"
-bed_DUX4="0.ref/DUX4patch/Homo_sapiens.GRCh38.V102.withChr.DUX4.bed"
-ref_star="0.ref/index_star"
-
-ref_fusioncatcher="0.ref/fusioncatcher/human_v102"
-
-# ref_fusioncatcher="/ref_genomes/fusioncatcher/human_v102_new/human_v102"
-
-ref_cicero="/ref_genomes/CICERO/human/GRCh38/reference"
-
-# ref_RNApeg_dir="/ref_genomes/CICERO/human/GRCh38/reference/Homo_sapiens/GRCh38_no_alt/mRNA/RefSeq,/ref_genomes/CICERO/human/GRCh38/reference/Homo_sapiens/GRCh38_no_alt/FASTA"
-ref_RNApeg_dir=dir_project+"0.ref/genome,/ref_genomes/CICERO/human/GRCh38/reference/Homo_sapiens/GRCh38_no_alt/FASTA"
-
-# ref_RNApeg_fa="/home/zgu_labs/pipeline_online/rnaseq/0.ref/genome/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna"
-ref_RNApeg_fa="/ref_genomes/CICERO/human/GRCh38/reference/Homo_sapiens/GRCh38_no_alt/FASTA/GRCh38_no_alt.fa"
-ref_RNApeg_flat=dir_project+"0.ref/genome/refFlat.txt"
-
-
-
-# set_chr=['chr{}'.format(x) for x in list(range(1,23)) + ['X', 'Y']]
-
-set_chr="chr1"
-
-dir_out=    dir_project + "out_raw"; 
-dir_in=     dir_project + "0.original"; 
-id_info =   dir_project + "0.original/df_id.tsv"
-
-samplelist=['COH000456_D1','COH000893_D1']
-
-#output --##--##--##--##--
-# key_file=dir_out + "/{sample}/TRANSCRIPTOME/log/DoneMapping.txt"
-# key_file=dir_out + "/{sample}/TRANSCRIPTOME/log/{sample}.RNAseqCNV.bmk"
-# key_file=dir_out + "/{sample}/TRANSCRIPTOME/log/{sample}.Cicero.bmk"
-# key_file=dir_out + "/{sample}/TRANSCRIPTOME/log/{sample}.FusionCatcher.bmk"
-key_file=dir_out + "/{sample}/TRANSCRIPTOME/log/Done.txt"
-
-rule all:
-    input:
-        # key_file
-        # expand(dir_code +"/{sample}.sh",sample=samplelist)
-        # expand(key_file,sample=samplelist)
-        expand(key_file,sample=samplelist[0]),
-        # expand(key_file2,sample=samplelist)
-        # expand(key_file,id="test1")
-
 rule Star:
     input:
         fq1=        dir_in + '/{sample}.R1.fq.gz',
@@ -62,7 +13,7 @@ rule Star:
         dir_out=        dir_out + "/{sample}/TRANSCRIPTOME/star/",
         bam_tmp=        dir_out + "/{sample}/TRANSCRIPTOME/star/Aligned.out.bam",
         junction_tmp=   dir_out + "/{sample}/TRANSCRIPTOME/star/Chimeric.out.junction"
-    threads: 8
+    threads: cores_star
     shell:
         '''
         STAR \
@@ -122,7 +73,7 @@ rule samtools_sort:
     benchmark:      dir_out + "/{sample}/TRANSCRIPTOME/log/samtools_sort.bmk",
     params:
         dir_star=   dir_out + "/{sample}/TRANSCRIPTOME/star/",
-    threads: 8
+    threads: cores_samtools
     shell:
         '''
         samtools sort -m 1G -@ {threads} -O bam -T {output.dir} -o {output.bam} {input.bam}
@@ -192,7 +143,7 @@ rule FusionCatcher:
         dir_out=    dir_out + "/{sample}/TRANSCRIPTOME/FusionCatcher",
         fq1=        dir_in + '/{sample}.R1.fq.gz',
         fq2=        dir_in + '/{sample}.R2.fq.gz',
-    threads: 8
+    threads: cores_fusioncatcher
     shell:
         '''        
         fusioncatcher.py -p {threads} -d {params.ref} -i {params.fq1},{params.fq2} -o {output.dir} &>{log}
@@ -212,13 +163,10 @@ rule RNApeg:
         ref2=   ref_RNApeg_flat,
         dir_out=dir_out + "/{sample}/TRANSCRIPTOME/RNApeg",
         dir_bam=dir_out + "/{sample}/TRANSCRIPTOME/bam",
-        dir_ref=ref_RNApeg_dir,
-    threads: 8
+    threads: cores_RNApeg
     shell:
         '''
-        singularity run --containall \
-        --bind {params.dir_ref},{params.dir_bam},{params.dir_out}:/results /packages/singularity-images/rnapeg.simg RNApeg.sh \
-        -b {input.bam} -f {params.ref1} -r {params.ref2}  &>{log}
+        RNApeg.sh -b {input.bam} -f {params.ref1} -r {params.ref2}  &>{log}
         touch {output.RNApeg}
         '''
 
@@ -240,12 +188,10 @@ rule Cicero:
         dir_cicero= dir_out + "/{sample}/TRANSCRIPTOME/cicero",
         dir_temp=   dir_out + "/{sample}/TRANSCRIPTOME/Cicero",
         dir_fusion= dir_out + "/{sample}/TRANSCRIPTOME/Cicero/CICERO_DATADIR/{sample}",
-    threads: 8
+    threads: cores_cicero
     shell:
         '''
-        if [ -d {params.dir_temp} ]; then rm -rf {params.dir_temp}; fi
-        singularity exec --bind {params.ref},{params.dir_bam},{params.dir_junctions} /packages/singularity-images/cicero_0.3.0p2.sif Cicero.sh \
-        -n {threads} -b {input.bam} -g GRCh38_no_alt -r {params.ref} -j {input.junctions} -s 2 -c 10 -o {params.dir_temp} &>{log}
+        Cicero.sh -n {threads} -b {input.bam} -g GRCh38_no_alt -r {params.ref} -j {input.junctions} -s 2 -c 10 -o {params.dir_temp} &>{log}
         mv {params.dir_fusion}/*.txt {params.dir_cicero}
         touch {output.done}
         rm -rf {params.dir_temp}
@@ -254,9 +200,9 @@ rule Cicero:
 rule SplitNCigarReads:
     input:
         bam=    dir_out + "/{sample}/TRANSCRIPTOME/bam/{sample}.bam",
-        #bmk=   dir_out + "/{sample}/TRANSCRIPTOME/log/{sample}_markDup.bmk",
     output:
         bam_split=  temp(dir_out + "/{sample}/TRANSCRIPTOME/SplitNCigarReads/{sample}.{chr}.split.bam"),
+        bai_split=  temp(dir_out + "/{sample}/TRANSCRIPTOME/SplitNCigarReads/{sample}.{chr}.split.bai")
     log:        dir_out + "/{sample}/TRANSCRIPTOME/log/SplitNCigarReads/{sample}.{chr}.SplitNCigarReads.log"
     benchmark:  dir_out + "/{sample}/TRANSCRIPTOME/log/SplitNCigarReads/{sample}.{chr}.SplitNCigarReads.bmk"
     params:
@@ -270,6 +216,7 @@ rule SplitNCigarReads:
 rule HaplotypeCaller:
     input:
         bam=    dir_out + "/{sample}/TRANSCRIPTOME/SplitNCigarReads/{sample}.{chr}.split.bam",
+        bai=    dir_out + "/{sample}/TRANSCRIPTOME/SplitNCigarReads/{sample}.{chr}.split.bai",
         bmk=    dir_out + "/{sample}/TRANSCRIPTOME/log/SplitNCigarReads/{sample}.{chr}.SplitNCigarReads.bmk"
     output:
         vcf=    dir_out + "/{sample}/TRANSCRIPTOME/HaplotypeCaller/{sample}.{chr}.HaplotypeCaller.vcf"
@@ -333,7 +280,7 @@ rule RNAseqCNV:
         '''
         cat <(echo 'out_dir = "{params.outdir}"') <(echo 'count_dir = "{params.count_dir}"') <(echo 'snv_dir = "{params.snv_dir}"')  > {params.config_file}
         cat <(echo '{params.sample} {params.htseq_file} {params.vcf_file}') > {params.meta_file}
-        Rscript_GEP /home/zgu_labs/bin/R/RNAseq/RNAseqCNV.R {params.config_file} {params.meta_file} &> {log}
+        Rscript_GEP 0.scripts/RNAseqCNV.R {params.config_file} {params.meta_file} &> {log}
         '''
 
 rule Done:
