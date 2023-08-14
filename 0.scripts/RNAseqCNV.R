@@ -1,15 +1,3 @@
-library(RNAseqCNV)
-#load("/ref_genomes/RNAseqCNV/human/GRch38/df_for_RNAseqCNV_hg38.rdata")
-
-#file_config="/scratch/zuhu/project/GordanaRaca/ALL/out/COH002937_D1/TRANSCRIPTOME/RNAseqCNV/config"
-#file_meta="/scratch/zuhu/project/GordanaRaca/ALL/out/COH002937_D1/TRANSCRIPTOME/RNAseqCNV/metadata"
-
-args <- commandArgs(trailingOnly = TRUE)
-print(args)
-
-file_config=args[1]
-file_meta=args[2]
-
-#RNAseqCNV_wrapper(config = file_config, metadata = file_meta, snv_format = "vcf",referData = refData, keptSNP = keepSNP,mafRange=c(0.05,0.85))
-  
-RNAseqCNV_wrapper(config = file_config, metadata = file_meta, snv_format = "vcf",genome_version="hg38",mafRange=c(0.01,0.85))
+version https://git-lfs.github.com/spec/v1
+oid sha256:031cd319666051d72203a9ffe7d553ab4caff1f2fa4c583a1e2b8100e55927b1
+size 661
