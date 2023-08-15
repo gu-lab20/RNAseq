@@ -43,25 +43,43 @@ perl
 
 ### Configuration
 
-Users can edit the run\_rnaseq.smk file for configurations. Parameters:
+Users can edit the run\_rnaseq.smk file for configurations.
+
+Parameters:
+
 <strong>ref\_fa</strong>, the fasta file of reference genome of human
 GRCh38. Users need to download it.
 
 <strong>gtf</strong>, gtf annotation file of the reference genome. Users
-need to download it. <strong>bed\_DUX4</strong>, bed file of DUX4 genes.
-This file is used in the read counts patching process for DUX4 genes.
-Already included in the 0.ref directory. <strong>ref\_star</strong>,
-“0.ref/index\_star” <strong>ref\_fusioncatcher</strong>,
-“0.ref/fusioncatcher/human\_v102” <strong>ref\_cicero</strong>,
-“/ref\_genomes/CICERO/human/GRCh38/reference”
-<strong>ref\_RNApeg\_fa</strong> ref\_fa
-<strong>ref\_RNApeg\_flat</strong>, “0.ref/genome\_anno/refFlat.txt”
+need to download it.
 
-<strong>set\_chr<strong>, \[‘chr{}’.format(x) for x in list(range(1,23))
-+ \[‘X’, ‘Y’\]\]
+<strong>bed\_DUX4</strong>, bed file of DUX4 genes. This file is used in
+the read counts patching process for DUX4 genes. Already included in the
+0.ref directory.
+
+<strong>ref\_star</strong>, the directory of reference used by STAR to
+do alignment. Users will get it after the installation of STAR.
+
+<strong>ref\_fusioncatcher</strong>, the directory of reference used by
+FusionCatcher to call gene fusions Users will get it after the
+installation of FusionCatcher.
+
+<strong>ref\_cicero</strong>, the directory of reference used by Cicero
+to call gene fusions Users will get it after the installation of Cicero.
+
+<strong>ref\_RNApeg\_flat</strong>, the refFlat file used by RNApeg.
+Already included in the 0.ref directory.
 
 <strong>cores\_star</strong>, <strong>cores\_samtools</strong>,
-<strong>cores\_fusioncatcher</strong>,<strong>cores\_RNApeg</strong>,<strong>cores\_cicero</strong>,
+<strong>cores\_fusioncatcher</strong>, <strong>cores\_RNApeg</strong>
+and <strong>cores\_cicero</strong> are the number of threads used by the
+name of software indicated.
+
+<strong>dir\_in</strong>,
+
+<strong>dir\_out</strong>,
+
+<strong>samplelist</strong>,
 
 ### Run the pipeline
 
