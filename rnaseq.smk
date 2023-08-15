@@ -73,7 +73,7 @@ rule samtools_sort:
     benchmark:      dir_out + "/{sample}/TRANSCRIPTOME/log/samtools_sort.bmk",
     params:
         dir_star=   dir_out + "/{sample}/TRANSCRIPTOME/star/",
-    threads: cores_samtools
+    threads: cores_samtoolsSort
     shell:
         '''
         samtools sort -m 1G -@ {threads} -O bam -T {output.dir} -o {output.bam} {input.bam}
@@ -302,30 +302,4 @@ rule Done:
         rm -rf {params.dir_temp}
         #mv {params.mapping_file_prefix}* {params.log_dir}
         '''
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

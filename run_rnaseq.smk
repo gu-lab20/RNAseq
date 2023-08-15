@@ -12,7 +12,7 @@ ref_RNApeg_flat=    "0.ref/genome_anno/refFlat.txt"
 set_chr=            ['chr{}'.format(x) for x in list(range(1,23)) + ['X', 'Y']]
 
 cores_star=             8
-cores_samtools=         8
+cores_samtoolsSort=     8
 cores_fusioncatcher=    8
 cores_RNApeg=           8
 cores_cicero=           8
