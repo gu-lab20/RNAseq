@@ -3,10 +3,10 @@ rule Star:
         fq1=        dir_in + '/{sample}.R1.fq.gz',
         fq2=        dir_in + '/{sample}.R2.fq.gz',
     output:
-        bam=        temp(dir_out + "/{sample}/TRANSCRIPTOME/star/{sample}.bam"),
+        bam=        temp(dir_out + "/{sample}/TRANSCRIPTOME/bam/{sample}.unsort.bam"),
         junction=   dir_out + "/{sample}/TRANSCRIPTOME/bam/{sample}.star.junction",
-    benchmark:      dir_out + "/{sample}/TRANSCRIPTOME/log/star/star.bmk",
-    log:            dir_out + "/{sample}/TRANSCRIPTOME/star/star.log",
+    benchmark:      dir_out + "/{sample}/TRANSCRIPTOME/log/star.bmk",
+    log:            dir_out + "/{sample}/TRANSCRIPTOME/bam/star.log",
     params:
         star_ref=       ref_star,
         rg=             "ID:{sample} PL:ILLUMINA PU:ILLUMINA LB:RNAseq SM:{sample}",
@@ -59,30 +59,29 @@ rule Star:
 
         mv {params.bam_tmp} {output.bam}
         mv {params.junction_tmp} {output.junction}
+        rm -rf {params.dir_out}
         '''
 
 rule samtools_sort:
     input:
-        bam=        dir_out + "/{sample}/TRANSCRIPTOME/star/{sample}.bam",
+        bam=        dir_out + "/{sample}/TRANSCRIPTOME/bam/{sample}.unsort.bam",
     output:
-        bam=        temp(dir_out + "/{sample}/TRANSCRIPTOME/samtools_sort/{sample}.bam"),
-        bai=        temp(dir_out + "/{sample}/TRANSCRIPTOME/samtools_sort/{sample}.bam.bai"),
+        bam=        temp(dir_out + "/{sample}/TRANSCRIPTOME/bam/{sample}.sorted.bam"),
+        bai=        temp(dir_out + "/{sample}/TRANSCRIPTOME/bam/{sample}.sorted.bam.bai"),
     benchmark:      dir_out + "/{sample}/TRANSCRIPTOME/log/samtools_sort.bmk",
     params:
-        dir_star=   dir_out + "/{sample}/TRANSCRIPTOME/star/",
-        dir=        dir_out + "/{sample}/TRANSCRIPTOME/samtools_sort/"
+        dir=        dir_out + "/{sample}/TRANSCRIPTOME/bam/"
     threads: cores_samtoolsSort
     shell:
         '''
         samtools sort -m 1G -@ {threads} -O bam -T {params.dir} -o {output.bam} {input.bam}
-        samtools index {output.bam} {output.bai} &>> {log}
-        if [ -d {params.dir_star} ]; then rm -r {params.dir_star}; fi
+        samtools index {output.bam} {output.bai} 
         '''
 
 rule MarkDup:
     input:
-        bam=        dir_out + "/{sample}/TRANSCRIPTOME/samtools_sort/{sample}.bam",
-        bai=        dir_out + "/{sample}/TRANSCRIPTOME/samtools_sort/{sample}.bam.bai",
+        bam=        dir_out + "/{sample}/TRANSCRIPTOME/bam/{sample}.sorted.bam",
+        bai=        dir_out + "/{sample}/TRANSCRIPTOME/bam/{sample}.sorted.bam.bai",
     output:
         bam=        dir_out + "/{sample}/TRANSCRIPTOME/bam/{sample}.bam",
         bai=        dir_out + "/{sample}/TRANSCRIPTOME/bam/{sample}.bam.bai",
@@ -94,7 +93,7 @@ rule MarkDup:
     shell:
         '''        
         gatk MarkDuplicates -I {input.bam} -O {output.bam} -M {output.metrics} &> {log}
-        samtools index {output.bam} {output.bai} &>> {log}
+        samtools index {output.bam} {output.bai}
         '''
 
 rule HTSeq_count:
@@ -119,7 +118,6 @@ rule HTSeqDUX4:
         htseq=  dir_out + "/{sample}/TRANSCRIPTOME/HTSeq/{sample}.HTSeq",
     output:
         HTSeq=  dir_out + "/{sample}/TRANSCRIPTOME/HTSeq/{sample}.DUX4patched.HTSeq",
-    log:        dir_out + "/{sample}/TRANSCRIPTOME/log/HTSeqDUX4.log"
     benchmark:  dir_out + "/{sample}/TRANSCRIPTOME/log/HTSeqDUX4.bmk"
     params:
         bed=    bed_DUX4,
@@ -163,7 +161,7 @@ rule RNApeg:
     threads: cores_RNApeg
     shell:
         '''
-        RNApeg.sh -b {input.bam} -f {params.ref1} -r {params.ref2} -O {params.dir_out}  &>{log}
+        RNApeg.sh -b {input.bam} -f {params.ref1} -r {params.ref2} -O {params.dir_out}  &> {log}
         '''
 
 rule SplitNCigarReads:
@@ -199,7 +197,7 @@ rule HaplotypeCaller:
         gatk HaplotypeCaller --native-pair-hmm-threads {threads} \
         --dont-use-soft-clipped-bases \
         -R {params.ref} --intervals {params.chr} -I {input.bam} \
-        -O {output.vcf} &>> {log}
+        -O {output.vcf} &> {log}
         '''
 
 rule HaplotypeCaller_merge:
