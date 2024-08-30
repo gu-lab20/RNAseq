@@ -1,0 +1,16 @@
+################################################################################################
+#Parameters #######################################################################################
+dir_script:         "/Full_path_to/dir_script/"
+ref_fa:             "/Full_path_to/genome/GCA_000001405.15_GRCh38_no_alt_plus_hs38d1_analysis_set.fna"
+gtf:                "/Full_path_to/genome_anno/Homo_sapiens.GRCh38.V102.withChr.gtf"
+bed_DUX4:           "/Full_path_to/DUX4patch/Homo_sapiens.GRCh38.V102.withChr.DUX4.bed"
+ref_star:           "/Full_path_to/index_star"
+ref_fusioncatcher:  "/Full_path_to/fusioncatcher/human_v102"
+ref_RNApeg_fa:      "/Full_path_to/genome/GCA_000001405.15_GRCh38_no_alt_plus_hs38d1_analysis_set.fna"
+ref_RNApeg_flat:    "/Full_path_to/genome_anno/refFlat.txt"
+
+cores_star:             8
+cores_samtoolsSort:     8
+cores_fusioncatcher:    8
+cores_RNApeg:           8
+

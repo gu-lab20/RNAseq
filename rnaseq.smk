@@ -1,3 +1,40 @@
+# config file ---------------------------------------------------------------------------------------------------
+configfile: '/full_path_to/config.yaml'
+
+################################################################################################
+# config args #######################################################################################
+
+# configs froom arguements
+dir_in=config["dir_in"]
+dir_out=config["dir_out"]
+samplelist=config["sample"]
+
+# configs from config file
+
+dir_script=config['dir_script']
+ref_fa=config['ref_fa']
+gtf=config['gtf']
+bed_DUX4=config['bed_DUX4']
+ref_star=config['ref_star']
+ref_fusioncatcher=config['ref_fusioncatcher']
+ref_RNApeg_fa=config['ref_RNApeg_fa']
+ref_RNApeg_flat=config['ref_RNApeg_flat']
+
+cores_star=config['cores_star']
+cores_samtoolsSort=config['cores_samtoolsSort']
+cores_fusioncatcher=config['cores_fusioncatcher']
+cores_RNApeg=config['cores_RNApeg']
+
+# human chromosomes
+set_chr=['chr{}'.format(x) for x in list(range(1,23)) + ['X', 'Y']]
+
+
+################################################################################################
+# Pipeline ######################################################################################
+rule all:
+    input:
+        expand(dir_out + "/{sample}/TRANSCRIPTOME/log/Done.txt",sample=samplelist)
+
 rule Star:
     input:
         fq1=        dir_in + '/{sample}.R1.fq.gz',
