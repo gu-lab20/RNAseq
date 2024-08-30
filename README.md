@@ -33,9 +33,10 @@ and the reference database.
 
 ### Configuration
 
-Users will need to edit the run\_rnaseq.smk file for configurations.
+Users will need to edit the *config.yaml* file for configurations.
 Please use the full path for all the reference data as required by
-Singularity.
+Singularity. After editing, please add the pull path of *config.yaml* in
+the *rnaseq.smk* file.
 
 #### Parameters
 
@@ -68,12 +69,12 @@ is correctly installed and loaded. Code for running the
 pipeline:
 
 ``` bash
-singularity exec --bind /full_path_to/ref /full_path_to/app_gulab_rnaseq-20231121_haswell.sif \
+singularity exec --bind /full_path_to/ref /full_path_to/app_gulab_rnaseq-20231121.sif \
 snakemake \
 --config dir_in=/full_path_to/fq \
 dir_out=/full_path_to/out \
 sample=testId \
--s /full_path_to/run_rnaseq.smk --rerun-incomplete -p --keep-going -j16
+-s /full_path_to/rnaseq.smk --rerun-incomplete -p --keep-going -j16
 ```
 
 The code will initate the pipeline to runing the analysis for sample id
