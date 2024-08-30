@@ -65,16 +65,20 @@ the corresponding software.
 
 Before running, making sure the
 [Singularity](https://docs.sylabs.io/guides/3.5/user-guide/introduction.html)
-is correctly installed and loaded. Code for running the
+is correctly installed and loaded. Note that all working directories
+including reference, pipeline and project must be added to singularity
+using *–bind*. Otherwise singularity will not be able to use them. The
+files in current folder does not need to bind. Files Code for running
+the
 pipeline:
 
 ``` bash
-singularity exec --bind /full_path_to/ref /full_path_to/app_gulab_rnaseq-20231121.sif \
+singularity exec --bind /full_path_to/ref,/full_path_to/pipeline,/full_path_to/project /full_path_to/app_gulab_rnaseq-20231121.sif \
 snakemake \
---config dir_in=/full_path_to/fq \
-dir_out=/full_path_to/out \
+--config dir_in=/full_path_to/project/fq \
+dir_out=/full_path_to/project/out \
 sample=testId \
--s /full_path_to/rnaseq.smk --rerun-incomplete -p --keep-going -j16
+-s /full_path_to/pipeline/rnaseq.smk --rerun-incomplete -p --keep-going -j16
 ```
 
 The code will initate the pipeline to runing the analysis for sample id
